@@ -140,8 +140,6 @@ def massRemove(session):
 	# Go back to the main menu
 	mainMenu(session)
 	
-
-
 def massRemoveNonUnique(session):
 	party = session.checkInventory().party
 	pokemon_party = {}
@@ -158,7 +156,6 @@ def massRemoveNonUnique(session):
 		pokemon_party[pokemon_name].append((iv_percent, p))
 
 	# Start printing the pokemon to remove
-	print '\n'
 	print 'Removing the following pokemon...\n'
 	print ' NAME            | CP    | ATK | DEF | STA | IV% '
 	print '---------------- | ----- | --- | --- | --- | ----'
@@ -189,7 +186,7 @@ def massRemoveNonUnique(session):
 						 color, pokedex[pokemon.pokemon_id], pokemon.cp, pokemon.individual_attack,
 						 pokemon.individual_defense, pokemon.individual_stamina, iv_percent)
 	time.sleep(0.1)
-	print '\n\n'
+	print '\n'
 	# Start removing the pokemon
 	if not len(trade_pokemon):
 		logging.info("No Pokemon to be removed.")
@@ -394,7 +391,7 @@ def mainMenu(session):
 	print '  1: View Pokemon'
 	print '  2: View Counts'
 	print '  3: Transfer Pokemon'
-	print '  4: Transfer Non-Unique Pokemon'
+	print '  4: Transfer Duplicate Pokemon'
 	print '  5: Rename Pokemon'
 	print '  6: Exit'
 
@@ -419,7 +416,7 @@ if __name__ == '__main__':
     parser.add_argument("-a", "--auth", help="Auth Service", required=True)
     parser.add_argument("-u", "--username", help="Username", required=True)
     parser.add_argument("-p", "--password", help="Password", required=False)
-    parser.add_argument("-l", "--location", help="Location", required=True)
+    parser.add_argument("-l", "--location", help="Location", required=False)
     parser.add_argument("-g", "--geo_key", help="GEO API Secret")
     args = parser.parse_args()
 
@@ -443,12 +440,13 @@ if __name__ == '__main__':
     # Authenticate with a given location
     # Location is not inherent in authentication
     # But is important to session
-    session = poko_session.authenticate(args.location)
+    if args.location != '':
+        session = poko_session.authenticate(args.location)
+    else:
+        session = poko_session.authenticate()
 
     # Time to show off what we can do
     if session:
-
 		mainMenu(session)
-
     else:
         logging.critical('Session not created successfully')
