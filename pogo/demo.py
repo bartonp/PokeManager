@@ -18,13 +18,13 @@ from pokedex import pokedex
 from inventory import items
 
 def setupLogger():
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(message)s')
-    ch.setFormatter(formatter)
-    logger.addHandler(ch)
+	logger = logging.getLogger()
+	logger.setLevel(logging.INFO)
+	ch = logging.StreamHandler()
+	ch.setLevel(logging.DEBUG)
+	formatter = logging.Formatter('%(message)s')
+	ch.setFormatter(formatter)
+	logger.addHandler(ch)
 
 ## Mass remove pokemon. It first displays the "Safe" numbers of pokemon that can be released, then makes sure you want to release them
 def massRemove(session):
@@ -421,45 +421,45 @@ def mainMenu(session):
 # Entry point
 # Start off authentication and demo
 if __name__ == '__main__':
-    setupLogger()
-    logging.debug('Logger set up')
+	setupLogger()
+	logging.debug('Logger set up')
 
-    # Read in args
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-a", "--auth", help="Auth Service", required=True)
-    parser.add_argument("-u", "--username", help="Username", required=True)
-    parser.add_argument("-p", "--password", help="Password", required=False)
-    parser.add_argument("-l", "--location", help="Location", required=False)
-    parser.add_argument("-g", "--geo_key", help="GEO API Secret")
-    args = parser.parse_args()
+	# Read in args
+	parser = argparse.ArgumentParser()
+	parser.add_argument("-a", "--auth", help="Auth Service", required=True)
+	parser.add_argument("-u", "--username", help="Username", required=True)
+	parser.add_argument("-p", "--password", help="Password", required=False)
+	parser.add_argument("-l", "--location", help="Location", required=False)
+	parser.add_argument("-g", "--geo_key", help="GEO API Secret")
+	args = parser.parse_args()
 
-    # Check service
-    if args.auth not in ['ptc', 'google']:
-        logging.error('Invalid auth service {}'.format(args.auth))
-        sys.exit(-1)
-        
-    # Check password
-    if args.password == None:
-    	args.password = getpass.getpass()
+	# Check service
+	if args.auth not in ['ptc', 'google']:
+		logging.error('Invalid auth service {}'.format(args.auth))
+		sys.exit(-1)
 
-    # Create PokoAuthObject
-    poko_session = PokeAuthSession(
-        args.username,
-        args.password,
-        args.auth,
-        geo_key=args.geo_key
-    )
+	# Check password
+	if args.password == None:
+		args.password = getpass.getpass()
 
-    # Authenticate with a given location
-    # Location is not inherent in authentication
-    # But is important to session
-    if args.location != '':
-        session = poko_session.authenticate(args.location)
-    else:
-        session = poko_session.authenticate()
+	# Create PokoAuthObject
+	poko_session = PokeAuthSession(
+		args.username,
+		args.password,
+		args.auth,
+		geo_key=args.geo_key
+	)
 
-    # Time to show off what we can do
-    if session:
+	# Authenticate with a given location
+	# Location is not inherent in authentication
+	# But is important to session
+	if args.location != '':
+		session = poko_session.authenticate(args.location)
+	else:
+		session = poko_session.authenticate()
+
+	# Time to show off what we can do
+	if session:
 		mainMenu(session)
-    else:
-        logging.critical('Session not created successfully')
+	else:
+		logging.critical('Session not created successfully')
