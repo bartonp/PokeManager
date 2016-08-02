@@ -439,11 +439,11 @@ if __name__ == '__main__':
 		sys.exit(-1)
 
 	# Check password
-	if args.password == None:
+	if args.password is None:
 		args.password = getpass.getpass()
 
 	# Create PokoAuthObject
-	poko_session = PokeAuthSession(
+	pogo_session = PokeAuthSession(
 		args.username,
 		args.password,
 		args.auth,
@@ -454,9 +454,9 @@ if __name__ == '__main__':
 	# Location is not inherent in authentication
 	# But is important to session
 	if args.location != '':
-		session = poko_session.authenticate(args.location)
+		session = pogo_session.authenticate(args.location)
 	else:
-		session = poko_session.authenticate()
+		session = pogo_session.authenticate()
 
 	# Time to show off what we can do
 	if session:
