@@ -144,7 +144,9 @@ def massRemoveNonUnique(session):
 	party = session.checkInventory().party
 	pokemon_party = {}
 
-	iv_minimum = int(raw_input('\nWhat is your IV cut off? (Pokemon above this will be safe from transfer): '))
+	iv_max_trade = int(raw_input('\nWhat is your IV cut off? (Pokemon above this will be safe from transfer): '))
+	cp_max_trade = int(raw_input('\nWhat is your CP cut off? (Pokemon above this will be safe from transfer): '))
+
 
 	# Build the party into a dictionary
 	for p in party:
@@ -172,7 +174,10 @@ def massRemoveNonUnique(session):
 			if index == 0 or pokemon.favorite:
 				continue
 
-			if iv_percent >= iv_minimum:
+			if iv_percent >= iv_max_trade:
+				continue
+
+			if pokemon.cp >= cp_max_trade:
 				continue
 
 			trade_pokemon.append(pokemon)
