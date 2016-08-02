@@ -151,6 +151,10 @@ def massRemoveNonUnique(session):
 	except_pokemon = rf.read().splitlines()
 	rf.close()
 
+	rf = open(os.path.dirname(__file__) + '/../exceptions.config')
+	except_pokemon = rf.read().splitlines()
+	rf.close()
+
 	# Build the party into a dictionary
 	for p in party:
 		iv_percent = ((p.individual_attack + p.individual_defense + p.individual_stamina) * 100) / 45
