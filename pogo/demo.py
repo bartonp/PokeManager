@@ -11,13 +11,10 @@ import os.path
 import POGOProtos.Enums.PokemonMove_pb2 as PokemonMove_pb2
 
 from collections import Counter
-from custom_exceptions import GeneralPogoException
 from api import PokeAuthSession
-from location import Location
 from pokedex import pokedex
-from inventory import items
 
-def setupLogger():
+def setup_logger():
 	logger = logging.getLogger()
 	logger.setLevel(logging.INFO)
 	ch = logging.StreamHandler()
@@ -29,110 +26,112 @@ def setupLogger():
 ## Mass remove pokemon. It first displays the "Safe" numbers of pokemon that can be released, then makes sure you want to release them
 def massRemove(session):
 	party = session.checkInventory().party
-	myParty = []
+	my_party = []
 	
 	# Open the config file to create the exception list to NEVER transfer Pokemon
 	rf = open(os.path.dirname(__file__) + '/../exceptions.config')
-	exceptionList = rf.read().splitlines()
+	exception_list = rf.read().splitlines()
 	rf.close()
 	
 	# Get the stats for all the pokemon in the party. Easier to store and nicer to display.
 	for pokemon in party:
-		IvPercent = ((pokemon.individual_attack + pokemon.individual_defense + pokemon.individual_stamina)*100)/45
-		L = [pokedex[pokemon.pokemon_id],pokemon.cp,pokemon.individual_attack,pokemon.individual_defense,pokemon.individual_stamina,IvPercent,pokemon]
-		myParty.append(L)
+		iv_percent = ((pokemon.individual_attack + pokemon.individual_defense + pokemon.individual_stamina)*100)/45
+		L = [pokedex[pokemon.pokemon_id], pokemon.cp, pokemon.individual_attack, pokemon.individual_defense,
+			 pokemon.individual_stamina, iv_percent, pokemon]
+		my_party.append(L)
 	
 	# Sort the list by name and then IV percent
-	myParty.sort(key = operator.itemgetter(0, 5))
+	my_party.sort(key = operator.itemgetter(0, 5))
 	
-	safeIV = int(raw_input('\nWhat is your IV cut off? (Pokemon above this will be safe from transfer): '))
-	safeCP = int(raw_input('What is your CP cut off? (Pokemon above this will be safe from transfer): '))
+	max_iv = int(raw_input('\nWhat is your IV cut off? (Pokemon above this will be safe from transfer): '))
+	max_cp = int(raw_input('What is your CP cut off? (Pokemon above this will be safe from transfer): '))
 	
 	# Create a "safe" party by removing good IVs and high CPs
-	safeParty = [item for item in myParty if item[5] < safeIV and item[1] < safeCP]
+	safe_party = [item for item in my_party if item[5] < max_iv and item[1] < max_cp]
 	
 	# Ask user which pokemon they want. This must be CAPITALS.
-	userPokemon = raw_input("\nWhich pokemon do you want to transfer? (ALL will transfer everything below the safe zones): ").upper()
+	user_pokemon = raw_input("\nWhich pokemon do you want to transfer? (ALL will transfer everything below the safe zones): ").upper()
 	
 	# If they choose ALL, then sort by IV, not by name
-	if userPokemon == 'ALL':
-		safeParty.sort(key = operator.itemgetter(5))
+	if user_pokemon == 'ALL':
+		safe_party.sort(key = operator.itemgetter(5))
 	
 	# Show user all the "safe to remove" pokemon
-	refinedMonsters = []
+	refined_monsters = []
 	print '\n'
 	print ' NAME            | CP    | ATK | DEF | STA | IV% '
 	print '---------------- | ----- | --- | --- | --- | ----'
-	for monster in safeParty:
-		if monster[0] == userPokemon or userPokemon == 'ALL' and monster[0] not in exceptionList:
+	for monster in safe_party:
+		if monster[0] == user_pokemon or user_pokemon == 'ALL' and monster[0] not in exception_list:
 			if monster[5] > 74:
 				logging.info('\033[1;32;40m %-15s | %-5s | %-3s | %-3s | %-3s | %-3s \033[0m',monster[0],monster[1],monster[2],monster[3],monster[4],monster[5])
 			elif monster[5] > 49:
 				logging.info('\033[1;33;40m %-15s | %-5s | %-3s | %-3s | %-3s | %-3s \033[0m',monster[0],monster[1],monster[2],monster[3],monster[4],monster[5])
 			else:
 				logging.info('\033[1;37;40m %-15s | %-5s | %-3s | %-3s | %-3s | %-3s \033[0m',monster[0],monster[1],monster[2],monster[3],monster[4],monster[5])
-			refinedMonsters.append(monster)
+			refined_monsters.append(monster)
 	
 	# If they can't "safely" remove any pokemon, then send them to the main menu again
-	if len(refinedMonsters) < 1:
+	if len(refined_monsters) < 1:
 		print "\nCannot safely transfer any Pokemon of this type. IVs or CP are too high."
 		mainMenu(session)
 	
-	if userPokemon == 'ALL':
-		logging.info('\nCan safely remove %s Pokemon',len(refinedMonsters))
+	if user_pokemon == 'ALL':
+		logging.info('\nCan safely remove %s Pokemon',len(refined_monsters))
 	else:
-		logging.info('\nCan safely remove %s of this Pokemon',len(refinedMonsters))
+		logging.info('\nCan safely remove %s of this Pokemon',len(refined_monsters))
 	
 	# Ask how many they want to remove
-	userNumber = int(raw_input("How many do you want to remove?: "))
+	user_number = int(raw_input("How many do you want to remove?: "))
 	
-	if userNumber == 0:
+	if user_number == 0:
 		mainMenu(session)
+		return
 	
 	# Show the pokemon that are going to be removed to confirm to user
 	print '\n'
 	i = 0
-	monstersToRelease = []
+	mosters_to_release = []
 	print ' NAME            | CP    | ATK | DEF | STA | IV% '
 	print '---------------- | ----- | --- | --- | --- | ----'
-	for monster in refinedMonsters:
-		if i < int(userNumber):
-			i = i + 1
+	for monster in refined_monsters:
+		if i < int(user_number):
+			i += 1
 			if monster[5] > 74:
 				logging.info('\033[1;32;40m %-15s | %-5s | %-3s | %-3s | %-3s | %-3s \033[0m',monster[0],monster[1],monster[2],monster[3],monster[4],monster[5])
 			elif monster[5] > 49:
 				logging.info('\033[1;33;40m %-15s | %-5s | %-3s | %-3s | %-3s | %-3s \033[0m',monster[0],monster[1],monster[2],monster[3],monster[4],monster[5])
 			else:
 				logging.info('\033[1;37;40m %-15s | %-5s | %-3s | %-3s | %-3s | %-3s \033[0m',monster[0],monster[1],monster[2],monster[3],monster[4],monster[5])
-			monstersToRelease.append(monster)
+			mosters_to_release.append(monster)
 	
 	# Double check they are okay to remove
-	if userPokemon == 'ALL':
-		if int(userNumber) > len(refinedMonsters):
-			logging.info('\nThis will transfer %s Pokemon',len(refinedMonsters))
+	if user_pokemon == 'ALL':
+		if int(user_number) > len(refined_monsters):
+			logging.info('\nThis will transfer %s Pokemon',len(refined_monsters))
 		else:
-			logging.info('\nThis will transfer %s Pokemon',userNumber)
+			logging.info('\nThis will transfer %s Pokemon', user_number)
 	else:
-		if int(userNumber) > len(refinedMonsters):
-			logging.info('\nThis will transfer %s of this Pokemon',len(refinedMonsters))
+		if int(user_number) > len(refined_monsters):
+			logging.info('\nThis will transfer %s of this Pokemon',len(refined_monsters))
 		else:
-			logging.info('\nThis will transfer %s of this Pokemon',userNumber)
+			logging.info('\nThis will transfer %s of this Pokemon',user_number)
 		
-	okayToProceed = raw_input('Do you want to transfer these Pokemon? (y/n): ').lower()
+	okay_to_process = raw_input('Do you want to transfer these Pokemon? (y/n): ').lower()
 	
 	# Remove the pokemon! Use randomness to reduce chance of bot detection
 	outlier = random.randint(8,12)
 	index = 0
 	counter = 0
-	if okayToProceed == 'y':
-		for monster in monstersToRelease:
-			index = index + 1
-			counter = counter + 1
+	if okay_to_process == 'y':
+		for monster in mosters_to_release:
+			index += 1
+			counter += 1
 			session.releasePokemon(monster[6])
 			logging.info('Transferring Pokemon %s of %s...',counter,len(monstersToRelease))
 			t = random.uniform(2.0, 5.0)
 			if index == outlier:
-				t = t * 3
+				t *= 3
 				outlier = random.randint(8,12)
 				index = 0
 			time.sleep(t)
@@ -393,7 +392,7 @@ def viewPokemon(session):
 			logging.info('\033[1;33;40m %-15s | %-5s | %-3s | %-3s | %-3s | %-3s | %-15s | %s \033[0m',monster[0],monster[1],monster[2],monster[3],monster[4],monster[5],monster[7],monster[8])
 		else:
 			logging.info('\033[1;37;40m %-15s | %-5s | %-3s | %-3s | %-3s | %-3s | %-15s | %s \033[0m',monster[0],monster[1],monster[2],monster[3],monster[4],monster[5],monster[7],monster[8])
-		i = i+1
+		i += 1
 	
 	# Close the CSV
 	if saveCSV == 'y':
@@ -425,7 +424,7 @@ def mainMenu(session):
 # Entry point
 # Start off authentication and demo
 if __name__ == '__main__':
-	setupLogger()
+	setup_logger()
 	logging.debug('Logger set up')
 
 	# Read in args
