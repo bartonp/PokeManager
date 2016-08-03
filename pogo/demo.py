@@ -144,11 +144,7 @@ def massRemoveNonUnique(session):
 	pokemon_party = {}
 
 	iv_max_trade = int(raw_input('\nWhat is your IV cut off? (Pokemon above this will be safe from transfer): '))
-	cp_max_trade = int(raw_input('\nWhat is your CP cut off? (Pokemon above this will be safe from transfer): '))
-
-	rf = open(os.path.dirname(__file__) + '/../exceptions.config')
-	except_pokemon = rf.read().splitlines()
-	rf.close()
+	cp_max_trade = int(raw_input('What is your CP cut off? (Pokemon above this will be safe from transfer): '))
 
 	rf = open(os.path.dirname(__file__) + '/../exceptions.config')
 	except_pokemon = rf.read().splitlines()
@@ -188,7 +184,7 @@ def massRemoveNonUnique(session):
 
 			if pokemon.cp >= cp_max_trade:
 				continue
-
+			
 			trade_pokemon.append(pokemon)
 			color = 37
 			if iv_percent > 74:
@@ -225,7 +221,6 @@ def massRemoveNonUnique(session):
 
 	mainMenu(session)
 
-
 def massRename(session):
 	party = session.checkInventory().party
 	myParty = []
@@ -252,6 +247,11 @@ def massRename(session):
 			refinedParty.append(monster)
 	
 	# Show how many it will rename and if they want to continue
+	if len(refinedParty) == 0:
+		logging.info('\nNo Pokemon to be renamed')
+		mainMenu(session)
+		return
+	
 	logging.info('\nThis will rename %s Pokemon.',len(refinedParty))
 	okayToProceed = raw_input('Do you want to rename these Pokemon? (y/n): ').lower()
 	
