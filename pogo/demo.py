@@ -36,9 +36,8 @@ def massRemove(session):
 	# Get the stats for all the pokemon in the party. Easier to store and nicer to display.
 	for pokemon in party:
 		iv_percent = ((pokemon.individual_attack + pokemon.individual_defense + pokemon.individual_stamina)*100)/45
-		L = [pokedex[pokemon.pokemon_id], pokemon.cp, pokemon.individual_attack, pokemon.individual_defense,
-			 pokemon.individual_stamina, iv_percent, pokemon]
-		my_party.append(L)
+		my_party.append([pokedex[pokemon.pokemon_id], pokemon.cp, pokemon.individual_attack, pokemon.individual_defense,
+			 pokemon.individual_stamina, iv_percent, pokemon])
 	
 	# Sort the list by name and then IV percent
 	my_party.sort(key = operator.itemgetter(0, 5))
@@ -91,7 +90,7 @@ def massRemove(session):
 	# Show the pokemon that are going to be removed to confirm to user
 	print '\n'
 	i = 0
-	mosters_to_release = []
+	monsters_to_release = []
 	print ' NAME            | CP    | ATK | DEF | STA | IV% '
 	print '---------------- | ----- | --- | --- | --- | ----'
 	for monster in refined_monsters:
@@ -103,7 +102,7 @@ def massRemove(session):
 				logging.info('\033[1;33;40m %-15s | %-5s | %-3s | %-3s | %-3s | %-3s \033[0m',monster[0],monster[1],monster[2],monster[3],monster[4],monster[5])
 			else:
 				logging.info('\033[1;37;40m %-15s | %-5s | %-3s | %-3s | %-3s | %-3s \033[0m',monster[0],monster[1],monster[2],monster[3],monster[4],monster[5])
-			mosters_to_release.append(monster)
+			monsters_to_release.append(monster)
 	
 	# Double check they are okay to remove
 	if user_pokemon == 'ALL':
@@ -124,11 +123,11 @@ def massRemove(session):
 	index = 0
 	counter = 0
 	if okay_to_process == 'y':
-		for monster in mosters_to_release:
+		for monster in monsters_to_release:
 			index += 1
 			counter += 1
 			session.releasePokemon(monster[6])
-			logging.info('Transferring Pokemon %s of %s...',counter,len(monstersToRelease))
+			logging.info('Transferring Pokemon %s of %s...',counter,len(monsters_to_release))
 			t = random.uniform(2.0, 5.0)
 			if index == outlier:
 				t *= 3
