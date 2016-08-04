@@ -444,6 +444,12 @@ if __name__ == '__main__':
 	if args.password is None:
 		args.password = getpass.getpass()
 
+	# Check that the exceptions file exists.
+	exceptions_file = os.path.abspath(os.path.dirname(__file__) + '/../exceptions.config')
+	if not os.path.isfile(exceptions_file):
+		logging.error("No Exceptions file found - '{}'".format(exceptions_file))
+		sys.exit(-2)
+
 	# Create PokoAuthObject
 	pogo_session = PokeAuthSession(
 		args.username,
